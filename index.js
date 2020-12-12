@@ -1,51 +1,4 @@
-function Vow(fn) {
-  var queue = [];
-
-  var execute = function () {
-    while (queue.length > 0) {
-      var q = queue.shift();
-      if (arguments[0] === "resolve") {
-        var nextData = q.fullfield.apply(null, arguments[1]);
-        (function (pNextQ, pNextData) {
-          queueMicrotask(() => {
-            pNextQ.nextResolve(pNextData);
-          });
-        })(q, nextData);
-      } else {
-        throw arguments[1];
-      }
-    }
-  };
-
-  var resolve = function () {
-    execute("resolve", arguments);
-  };
-
-  var reject = function () {
-    execute("reject", arguments[0]);
-  };
-
-  fn(resolve.bind(this), reject.bind(this));
-
-  this.then = function (fullfield) {
-    const data = {
-      fullfield,
-      nextResolve: undefined,
-    };
-    var nextVow = new Vow(function (resolve) {
-      data.nextResolve = resolve;
-    });
-
-    queue.push(data);
-
-    return nextVow;
-  };
-
-  this.catch = function (rejected) {
-    queue.push(rejected);
-    return this;
-  };
-}
+import Vow from "./Vow.js";
 
 var v = new Vow((resolve, reject) => {
   setTimeout(() => {
@@ -82,14 +35,14 @@ v.then((res) => {
   console.log("v then2 >", res);
 });
 
+// ######################################################################################################
+
 var p = new Promise((resolve, reject) => {
   setTimeout(() => {
     resolve(111);
     // reject(2222);
   }, 1000);
 });
-
-// ######################################################################################################
 
 p.then((res) => {
   console.warn("p then >", res);
