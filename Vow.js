@@ -25,7 +25,7 @@ function Vow(fn) {
     execute("reject", arguments[0]);
   };
 
-  fn(resolve.bind(this), reject.bind(this));
+  fn(resolve, reject);
 
   this.then = function (fullfield) {
     const data = {
