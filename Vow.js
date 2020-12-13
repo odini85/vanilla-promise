@@ -24,8 +24,6 @@ var REJECTED = "<rejected>";
 function Vow(fn) {
   var queue = [];
 
-  this.queue = queue;
-
   fn(
     Vow.publish.bind(this, FULLFILLED, Vow.executeQueue.bind(this, queue)),
     Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(this, queue))
