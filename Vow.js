@@ -32,8 +32,6 @@ function Vow(fn) {
   this.state = PENDING;
   this.result = undefined;
 
-  var nextVow = undefined;
-
   // then
   this.then = function (callback) {
     var state = this.state;
@@ -42,13 +40,9 @@ function Vow(fn) {
       callback(this.result);
     }
 
-    // if (!nextVow) {
-    nextVow = Vow.next(queue, "resolve", callback, function () {
+    return Vow.next(queue, "resolve", callback, function () {
       return state !== REJECTED;
     });
-    // }
-
-    return nextVow;
   };
 
   // catch
