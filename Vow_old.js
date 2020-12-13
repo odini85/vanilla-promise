@@ -5,7 +5,7 @@ function Vow(fn) {
     while (queue.length > 0) {
       var q = queue.shift();
       if (arguments[0] === "resolve") {
-        var nextData = q.fullfield.apply(null, arguments[1]);
+        var nextData = q.FULLFILLED.apply(null, arguments[1]);
         (function (pNextQ, pNextData) {
           queueMicrotask(() => {
             pNextQ.nextResolve(pNextData);
@@ -27,9 +27,9 @@ function Vow(fn) {
 
   fn(resolve, reject);
 
-  this.then = function (fullfield) {
+  this.then = function (FULLFILLED) {
     const data = {
-      fullfield,
+      FULLFILLED,
       nextResolve: undefined,
     };
     var nextVow = new Vow(function (resolve) {

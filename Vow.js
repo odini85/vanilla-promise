@@ -7,11 +7,11 @@
 
 /**
  * @typedef StateTypes
- * @property {'<pending>' | '<fullfield>' | '<rejected>'} state
+ * @property {'<pending>' | '<fulfilled>' | '<rejected>'} state
  */
 
 var PENDING = "<pending>";
-var FULLFIELD = "<fullfield>";
+var FULLFILLED = "<fulfilled>";
 var REJECTED = "<rejected>";
 
 /**
@@ -24,20 +24,31 @@ var REJECTED = "<rejected>";
 function Vow(fn) {
   var queue = [];
 
+  this.queue = queue;
+
   fn(
-    Vow.publish.bind(this, FULLFIELD, Vow.executeQueue.bind(this, queue)),
+    Vow.publish.bind(this, FULLFILLED, Vow.executeQueue.bind(this, queue)),
     Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(this, queue))
   );
 
   this.state = PENDING;
   this.result = undefined;
 
+  var nextVow = undefined;
+
   // then
   this.then = function (callback) {
     var state = this.state;
-    var nextVow = Vow.next(queue, "resolve", callback, FULLFIELD, function () {
+
+    if (state === FULLFILLED) {
+      callback(this.result);
+    }
+
+    // if (!nextVow) {
+    nextVow = Vow.next(queue, "resolve", callback, function () {
       return state !== REJECTED;
     });
+    // }
 
     return nextVow;
   };
@@ -45,11 +56,10 @@ function Vow(fn) {
   // catch
   this.catch = function (callback) {
     var state = this.state;
-    var nextVow = Vow.next(queue, "reject", callback, REJECTED, function () {
+
+    return Vow.next(queue, "reject", callback, function () {
       return state === REJECTED;
     });
-
-    return nextVow;
   };
 }
 
@@ -58,10 +68,9 @@ function Vow(fn) {
  * @param {Q} queue
  * @param {Q['type']} type
  * @param {Function} callback
- * @param {StateTypes} nextVowState
  * @param {Function} pushCallback
  */
-Vow.next = function (queue, type, callback, nextVowState, pushCallback) {
+Vow.next = function (queue, type, callback, pushCallback) {
   const q = {
     type: type,
     callback: callback,
@@ -71,8 +80,6 @@ Vow.next = function (queue, type, callback, nextVowState, pushCallback) {
   var nextVow = new Vow(function (resolve) {
     q.nextResolve = resolve;
   });
-
-  nextVow.state = nextVowState;
 
   if (pushCallback()) {
     queue.push(q);
@@ -89,11 +96,12 @@ Vow.next = function (queue, type, callback, nextVowState, pushCallback) {
 Vow.publish = function (state, executeFn) {
   var args = [].slice.call(arguments, 2);
   var thiz = this;
+  this.state = state;
+
   queueMicrotask(function () {
     executeFn.apply(null, args);
     thiz.result = args[0];
   });
-  this.state = state;
 };
 
 /**
@@ -105,9 +113,8 @@ Vow.executeQueue = function (queue) {
     var q = queue.shift();
     var args = [].slice.call(arguments, 1);
     var userReturnValue = q.callback.apply(null, args);
-    (function (nextQ, nextResult) {
-      nextQ.nextResolve(nextResult);
-    })(q, userReturnValue);
+
+    q.nextResolve(userReturnValue);
   }
 };
 
