@@ -25,11 +25,12 @@ function Vow(fn) {
   var queue = [];
 
   fn(
-    Vow.publish.bind(this, FULLFIELD, Vow.executeQueue.bind(null, queue)),
-    Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(null, queue))
+    Vow.publish.bind(this, FULLFIELD, Vow.executeQueue.bind(this, queue)),
+    Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(this, queue))
   );
 
   this.state = PENDING;
+  this.result = undefined;
 
   // then
   this.then = function (callback) {
@@ -87,8 +88,10 @@ Vow.next = function (queue, type, callback, nextVowState, pushCallback) {
  */
 Vow.publish = function (state, executeFn) {
   var args = [].slice.call(arguments, 2);
+  var thiz = this;
   queueMicrotask(function () {
     executeFn.apply(null, args);
+    thiz.result = args[0];
   });
   this.state = state;
 };
@@ -101,10 +104,10 @@ Vow.executeQueue = function (queue) {
   while (queue.length > 0) {
     var q = queue.shift();
     var args = [].slice.call(arguments, 1);
-    var nextData = q.callback.apply(null, args);
-    (function (pNextQ, pNextData) {
-      pNextQ.nextResolve(pNextData);
-    })(q, nextData);
+    var userReturnValue = q.callback.apply(null, args);
+    (function (nextQ, nextResult) {
+      nextQ.nextResolve(nextResult);
+    })(q, userReturnValue);
   }
 };
 

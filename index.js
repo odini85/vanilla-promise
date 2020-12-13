@@ -95,7 +95,7 @@ p.then((res) => {
 })
   .then((res) => {
     console.log("p chain then >", res);
-    new Promise((resolve) => {
+    window.p2 = new Promise((resolve) => {
       resolve("p in resolve");
     })
       .then((res) => {
@@ -104,6 +104,7 @@ p.then((res) => {
       })
       .then((res) => {
         console.log("p in resolve then22", res);
+        return "????";
       });
   })
   .then((res) => {
@@ -134,7 +135,7 @@ v.then((res) => {
 })
   .then((res) => {
     console.log("v chain then >", res);
-    new Promise((resolve) => {
+    window.v2 = new Vow((resolve) => {
       resolve("v in resolve");
     })
       .then((res) => {
@@ -143,6 +144,7 @@ v.then((res) => {
       })
       .then((res) => {
         console.log("v in resolve then22", res);
+        return "????";
       });
   })
   .then((res) => {
@@ -155,3 +157,6 @@ v.then((res) => {
 v.then((res) => {
   console.log("v then2 >", res);
 });
+
+window.v = v;
+window.p = p;
