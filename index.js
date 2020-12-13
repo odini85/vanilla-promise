@@ -106,9 +106,12 @@ p.then((res) => {
         console.log("p in resolve then22", res);
         return "????";
       });
+
+    return ">>>>>";
   })
   .then((res) => {
     console.log("p chain2 then >", res);
+    return ">>>>> chain 222222";
   })
   .then((res) => {
     console.log("p chain3 then >", res);
@@ -146,9 +149,12 @@ v.then((res) => {
         console.log("v in resolve then22", res);
         return "????";
       });
+
+    return ">>>>>";
   })
   .then((res) => {
     console.log("v chain2 then >", res);
+    return ">>>>> chain 222222";
   })
   .then((res) => {
     console.log("v chain3 then >", res);

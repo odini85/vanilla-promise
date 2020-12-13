@@ -36,13 +36,16 @@ function Vow(fn) {
   this.then = function (callback) {
     var state = this.state;
 
-    if (state === FULLFILLED) {
-      callback(this.result);
-    }
-
-    return Vow.next.call(null, queue, "resolve", callback, function () {
+    var nextVow = Vow.next.call(null, queue, "resolve", callback, function () {
       return state !== REJECTED;
     });
+
+    if (state === FULLFILLED) {
+      callback(this.result);
+      nextVow.state = FULLFILLED;
+    }
+
+    return nextVow;
   };
 
   // catch
