@@ -25,8 +25,8 @@ function Vow(fn) {
   var queue = [];
 
   fn(
-    Vow.publish.bind(this, FULLFILLED, Vow.executeQueue.bind(this, queue)),
-    Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(this, queue))
+    Vow.publish.bind(this, FULLFILLED, Vow.executeQueue.bind(null, queue)),
+    Vow.publish.bind(this, REJECTED, Vow.executeQueue.bind(null, queue))
   );
 
   this.state = PENDING;
@@ -40,7 +40,7 @@ function Vow(fn) {
       callback(this.result);
     }
 
-    return Vow.next(queue, "resolve", callback, function () {
+    return Vow.next.call(null, queue, "resolve", callback, function () {
       return state !== REJECTED;
     });
   };
@@ -49,7 +49,7 @@ function Vow(fn) {
   this.catch = function (callback) {
     var state = this.state;
 
-    return Vow.next(queue, "reject", callback, function () {
+    return Vow.next.call(null, queue, "reject", callback, function () {
       return state === REJECTED;
     });
   };
